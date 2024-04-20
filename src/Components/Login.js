@@ -1,17 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa";
-import { API_BASE_URL, API_ROUTES } from '../apiConfig';
+import { API_BASE_URL, API_ROUTES, LOCAL_TOKEN_NAME } from '../apiConfig';
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from "react-router-dom";
+import { loginSuccess, logoutSuccess } from "../Redux/reducers/authReducer";
+
+import { useDispatch } from "react-redux";
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    
+    useEffect(() => {
+        // Check if the jwt cookie exists
+        localStorage.removeItem(LOCAL_TOKEN_NAME)
+        dispatch(logoutSuccess({ isAuthenticated: false}))
+      }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -31,15 +41,22 @@ const Login = () => {
                 password: password
             }
             const response = await axios.post(`${API_BASE_URL}${API_ROUTES.login}`, payload)
+            console.log(response)
             if (response.data.success ===  true){
+                localStorage.setItem(LOCAL_TOKEN_NAME, response.data.token)
+                const user = response.data.user
+                dispatch(loginSuccess({ isAuthenticated: true, user: user }))
                 toast.success("Login Successful!",{
                     autoClose: 1000,
                     style: {
                     width: '300px', 
                     }
                 })
+                navigate('/Home')
             }else {
+                setPassword('');
                 toast.error("Invalid Username or password",{
+                    
                     autoClose:1000,
                     style: {
                         width: '300px'
@@ -48,6 +65,7 @@ const Login = () => {
             }
 
         }catch(err){
+            setPassword('');
             toast.error("Login Failed",{
                 autoClose: 1000,
                     style: {

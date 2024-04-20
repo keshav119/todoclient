@@ -3,6 +3,9 @@ module.exports = {
   content: ["./src/**/*.{html,js}"],
   theme: {
     extend: {
+      fontFamily: {
+        'custom-font': ['Quicksand', 'sans-serif'],
+      },
       keyframes: {
         shake: {
           "0%": { transform: "translateX(0)" },
